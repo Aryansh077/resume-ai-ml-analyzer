@@ -1,4 +1,4 @@
-from backend.matcher import ResumeMatcher
+from backend.matcher import normalize_text
 
 def test_clean():
-    assert ResumeMatcher.clean("  Python\n FASTAPI ") == "python fastapi"
+    assert normalize_text("  Python\n FASTAPI ") == "python fastapi"

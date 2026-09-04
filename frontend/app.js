@@ -40,6 +40,49 @@ function getErrorMessage(data) {
     return JSON.stringify(data);
 }
 
+function getAnalysisData(data) {
+
+    if (!data || typeof data !== "object") {
+        return {};
+    }
+
+    if (data.result && typeof data.result === "object") {
+        return data.result;
+    }
+
+    if (data.analysis && typeof data.analysis === "object") {
+        return data.analysis;
+    }
+
+    return data;
+}
+
+function getDisplayValue(value, fallback = "") {
+
+    if (value === null || value === undefined) {
+        return fallback;
+    }
+
+    if (typeof value === "object") {
+        return value.name || value.label || value.skill || value.text || JSON.stringify(value);
+    }
+
+    return String(value);
+}
+
+function getSkillNames(skills) {
+
+    if (!Array.isArray(skills)) {
+        return [];
+    }
+
+    return skills
+        .map(function (skill) {
+            return getDisplayValue(skill).trim();
+        })
+        .filter(Boolean);
+}
+
 
 // =========================================================
 // SHOW ERROR
@@ -259,6 +302,8 @@ form.addEventListener("submit", async function (event) {
 
         }
 
+        const analysis = getAnalysisData(data);
+
 
         // =================================================
         // SCORE
@@ -273,7 +318,7 @@ form.addEventListener("submit", async function (event) {
         if (scoreElement) {
 
             scoreElement.textContent =
-                `${data.match_score}%`;
+                `${getDisplayValue(analysis.match_score, 0)}%`;
 
         }
 
@@ -291,7 +336,7 @@ form.addEventListener("submit", async function (event) {
         if (headlineElement) {
 
             headlineElement.textContent =
-                data.headline ||
+                getDisplayValue(analysis.headline, "Analysis Complete") ||
                 "Analysis Complete";
 
         }
@@ -310,7 +355,7 @@ form.addEventListener("submit", async function (event) {
         if (summaryElement) {
 
             summaryElement.textContent =
-                data.summary || "";
+                getDisplayValue(analysis.summary);
 
         }
 
@@ -330,8 +375,7 @@ form.addEventListener("submit", async function (event) {
             matchedElement.innerHTML = "";
 
 
-            const matched =
-                data.matched_skills || [];
+            const matched = getSkillNames(analysis.matched_skills);
 
 
             if (matched.length === 0) {
@@ -385,8 +429,7 @@ form.addEventListener("submit", async function (event) {
             missingElement.innerHTML = "";
 
 
-            const missing =
-                data.missing_skills || [];
+            const missing = getSkillNames(analysis.missing_skills);
 
 
             if (missing.length === 0) {
@@ -438,7 +481,7 @@ form.addEventListener("submit", async function (event) {
         if (probabilityElement) {
 
             probabilityElement.textContent =
-                `${data.ml_probability ?? 0}%`;
+                `${getDisplayValue(analysis.ml_probability, 0)}%`;
 
         }
 
@@ -456,7 +499,7 @@ form.addEventListener("submit", async function (event) {
         if (similarityElement) {
 
             similarityElement.textContent =
-                `${data.similarity ?? 0}%`;
+                `${getDisplayValue(analysis.similarity, 0)}%`;
 
         }
 
@@ -474,7 +517,7 @@ form.addEventListener("submit", async function (event) {
         if (skillMatchElement) {
 
             skillMatchElement.textContent =
-                `${data.skill_match ?? 0}%`;
+                `${getDisplayValue(analysis.skill_match, 0)}%`;
 
         }
 
