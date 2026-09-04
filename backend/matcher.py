@@ -1,65 +1,416 @@
-from pathlib import Path
-import joblib
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
+"""
+Lightweight Resume-Job Matcher
 
-ROOT = Path(__file__).resolve().parents[1]
-MODEL_PATH = ROOT / "ml" / "models" / "resume_matcher.joblib"
+Uses:
+    TF-IDF
+    Logistic Regression
+    Rule-based skill matching
+
+No Sentence Transformers.
+No PyTorch.
+"""
+
+from pathlib import Path
+import re
+import joblib
+
+
+# ---------------------------------------------------------
+# Paths
+# ---------------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+MODEL_PATH = (
+    BASE_DIR
+    / "ml"
+    / "models"
+    / "resume_matcher.joblib"
+)
+
+
+# ---------------------------------------------------------
+# Skills
+# ---------------------------------------------------------
 
 SKILLS = [
-    "python","java","javascript","typescript","c++","c#","go","rust",
-    "react","node.js","django","flask","fastapi","spring boot",
-    "sql","postgresql","mysql","mongodb","redis",
-    "docker","kubernetes","aws","azure","gcp","terraform",
-    "git","github","linux","rest api","graphql",
-    "machine learning","deep learning","tensorflow","pytorch",
-    "scikit-learn","pandas","numpy","nlp","computer vision",
-    "power bi","excel","figma","photoshop","illustrator",
-    "html","css","autocad","matlab"
+    # Programming
+    "python",
+    "java",
+    "javascript",
+    "typescript",
+    "c++",
+    "c#",
+
+    # Machine Learning
+    "machine learning",
+    "deep learning",
+    "artificial intelligence",
+    "data science",
+    "nlp",
+    "natural language processing",
+
+    # Python ecosystem
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "tensorflow",
+    "pytorch",
+    "keras",
+
+    # AI / GenAI
+    "generative ai",
+    "genai",
+    "llm",
+    "large language models",
+    "rag",
+    "retrieval augmented generation",
+    "embeddings",
+    "prompt engineering",
+
+    # Backend
+    "fastapi",
+    "django",
+    "flask",
+    "rest api",
+    "api",
+
+    # Databases
+    "sql",
+    "mysql",
+    "postgresql",
+    "postgres",
+    "mongodb",
+    "redis",
+    "supabase",
+
+    # Cloud
+    "aws",
+    "azure",
+    "gcp",
+    "google cloud",
+
+    # DevOps
+    "docker",
+    "kubernetes",
+    "git",
+    "github",
+    "linux",
+
+    # Data
+    "data analysis",
+    "data analytics",
+    "power bi",
+    "tableau",
+
+    # Other
+    "statistics",
+    "computer vision",
+    "opencv",
 ]
 
+
+# ---------------------------------------------------------
+# Utility
+# ---------------------------------------------------------
+
+def normalize_text(text: str) -> str:
+    """
+    Normalize text for easier matching.
+    """
+
+    text = text.lower()
+
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    )
+
+    return text.strip()
+
+
+def extract_skills(text: str) -> list:
+    """
+    Find known skills inside text.
+    """
+
+    text = normalize_text(text)
+
+    found = []
+
+    for skill in SKILLS:
+
+        pattern = r"(?<!\w)" + re.escape(skill) + r"(?!\w)"
+
+        if re.search(pattern, text):
+            found.append(skill)
+
+    return sorted(set(found))
+
+
+# ---------------------------------------------------------
+# Matcher
+# ---------------------------------------------------------
+
 class ResumeMatcher:
+
     def __init__(self):
+
         if not MODEL_PATH.exists():
+
             raise FileNotFoundError(
-                "ML model not found. Run: python ml/train.py"
+                f"ML model not found at {MODEL_PATH}. "
+                "Run: python ml/train.py"
             )
-        self.model = joblib.load(MODEL_PATH)
-        self.encoder = SentenceTransformer("all-MiniLM-L6-v2")
 
-    @staticmethod
-    def clean(text):
-        return " ".join(str(text).lower().split())
+        print("Loading lightweight ML model...")
 
-    def skills(self, text):
-        t = self.clean(text)
-        return sorted({s for s in SKILLS if s in t})
+        artifact = joblib.load(MODEL_PATH)
 
-    def analyze(self, resume, job):
-        r, j = self.clean(resume), self.clean(job)
-        resume_skills = set(self.skills(r))
-        job_skills = set(self.skills(j))
-        matched = sorted(resume_skills & job_skills)
-        missing = sorted(job_skills - resume_skills)
+        self.vectorizer = artifact["vectorizer"]
 
-        re, je = self.encoder.encode([r]), self.encoder.encode([j])
-        similarity = float(cosine_similarity(re, je)[0][0])
-        overlap = len(matched) / max(1, len(job_skills))
+        self.model = artifact["model"]
 
-        features = [[similarity, overlap, len(resume_skills), len(job_skills)]]
-        probability = float(self.model.predict_proba(features)[0][1])
+        print("ML model loaded successfully.")
 
-        # Blend interpretable signals with the trained classifier.
-        semantic_score = max(0.0, min(1.0, (similarity + 1) / 2))
-        final_score = round(100 * (0.65 * probability + 0.35 * semantic_score))
+
+    # -----------------------------------------------------
+    # Analyze
+    # -----------------------------------------------------
+
+    def analyze(
+        self,
+        resume_text: str,
+        job_description: str
+    ):
+
+        resume_text = normalize_text(
+            resume_text
+        )
+
+        job_description = normalize_text(
+            job_description
+        )
+
+
+        # -------------------------------------------------
+        # Skill extraction
+        # -------------------------------------------------
+
+        resume_skills = set(
+            extract_skills(resume_text)
+        )
+
+        job_skills = set(
+            extract_skills(job_description)
+        )
+
+
+        matched_skills = sorted(
+            resume_skills.intersection(
+                job_skills
+            )
+        )
+
+        missing_skills = sorted(
+            job_skills.difference(
+                resume_skills
+            )
+        )
+
+
+        # -------------------------------------------------
+        # Skill match percentage
+        # -------------------------------------------------
+
+        if len(job_skills) > 0:
+
+            skill_match = (
+                len(matched_skills)
+                / len(job_skills)
+            )
+
+        else:
+
+            skill_match = 0.0
+
+
+        # -------------------------------------------------
+        # TF-IDF similarity
+        # -------------------------------------------------
+
+        resume_vector = self.vectorizer.transform(
+            [resume_text]
+        )
+
+        job_vector = self.vectorizer.transform(
+            [job_description]
+        )
+
+
+        # cosine similarity
+        numerator = (
+            resume_vector @ job_vector.T
+        ).toarray()[0][0]
+
+        resume_norm = (
+            resume_vector.multiply(
+                resume_vector
+            ).sum()
+        ) ** 0.5
+
+        job_norm = (
+            job_vector.multiply(
+                job_vector
+            ).sum()
+        ) ** 0.5
+
+
+        if resume_norm > 0 and job_norm > 0:
+
+            similarity = (
+                numerator
+                / (resume_norm * job_norm)
+            )
+
+        else:
+
+            similarity = 0.0
+
+
+        # -------------------------------------------------
+        # ML prediction
+        # -------------------------------------------------
+
+        combined_text = (
+            "RESUME "
+            + resume_text
+            + " JOB "
+            + job_description
+        )
+
+
+        combined_vector = (
+            self.vectorizer.transform(
+                [combined_text]
+            )
+        )
+
+
+        probability = self.model.predict_proba(
+            combined_vector
+        )[0]
+
+
+        # Probability of positive class
+        if 1 in self.model.classes_:
+
+            positive_index = list(
+                self.model.classes_
+            ).index(1)
+
+            ml_probability = float(
+                probability[positive_index]
+            )
+
+        else:
+
+            ml_probability = 0.0
+
+
+        # -------------------------------------------------
+        # Final score
+        # -------------------------------------------------
+
+        final_score = (
+            (ml_probability * 0.50)
+            + (similarity * 0.25)
+            + (skill_match * 0.25)
+        )
+
+
+        final_score = max(
+            0.0,
+            min(
+                1.0,
+                final_score
+            )
+        )
+
+
+        match_score = round(
+            final_score * 100,
+            2
+        )
+
+
+        # -------------------------------------------------
+        # Headline
+        # -------------------------------------------------
+
+        if match_score >= 80:
+
+            headline = "Excellent Match"
+
+        elif match_score >= 65:
+
+            headline = "Strong Match"
+
+        elif match_score >= 50:
+
+            headline = "Moderate Match"
+
+        elif match_score >= 35:
+
+            headline = "Weak Match"
+
+        else:
+
+            headline = "Low Match"
+
+
+        # -------------------------------------------------
+        # Summary
+        # -------------------------------------------------
+
+        summary = (
+            f"The resume has a {headline.lower()} "
+            f"with the provided job description. "
+            f"It matches {len(matched_skills)} "
+            f"of {len(job_skills)} detected job skills."
+        )
+
+
+        # -------------------------------------------------
+        # Return
+        # -------------------------------------------------
 
         return {
-            "match_score": final_score,
-            "model_probability": round(probability * 100, 2),
-            "semantic_similarity": round(similarity, 4),
-            "skill_match_percentage": round(overlap * 100, 2),
-            "matched_skills": matched,
-            "missing_skills": missing,
-            "resume_skills": sorted(resume_skills),
-            "job_skills": sorted(job_skills),
+
+            "match_score": match_score,
+
+            "headline": headline,
+
+            "summary": summary,
+
+            "matched_skills": matched_skills,
+
+            "missing_skills": missing_skills,
+
+            "ml_probability": round(
+                ml_probability * 100,
+                2
+            ),
+
+            "similarity": round(
+                similarity * 100,
+                2
+            ),
+
+            "skill_match": round(
+                skill_match * 100,
+                2
+            ),
+
         }
