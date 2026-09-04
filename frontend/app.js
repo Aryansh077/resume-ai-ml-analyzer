@@ -7,9 +7,9 @@ const result = document.getElementById("result");
 const errorBox = document.getElementById("error");
 
 
-// ---------------------------------------------------------
-// Helper: safely get an error message
-// ---------------------------------------------------------
+// =========================================================
+// ERROR MESSAGE HELPER
+// =========================================================
 
 function getErrorMessage(data) {
 
@@ -17,8 +17,8 @@ function getErrorMessage(data) {
         return "Something went wrong.";
     }
 
-    // FastAPI normally returns:
-    // { "detail": "some message" }
+    // FastAPI error:
+    // { "detail": "Some error message" }
 
     if (typeof data === "string") {
         return data;
@@ -41,74 +41,88 @@ function getErrorMessage(data) {
 }
 
 
-// ---------------------------------------------------------
-// Show error
-// ---------------------------------------------------------
+// =========================================================
+// SHOW ERROR
+// =========================================================
 
 function showError(message) {
 
-    if (!errorBox) {
-        alert(message);
-        return;
-    }
+    if (errorBox) {
 
-    errorBox.textContent = message;
-    errorBox.style.display = "block";
+        errorBox.textContent = message;
+
+        errorBox.style.display = "block";
+
+    } else {
+
+        alert(message);
+
+    }
 }
 
 
-// ---------------------------------------------------------
-// Hide error
-// ---------------------------------------------------------
+// =========================================================
+// HIDE ERROR
+// =========================================================
 
 function hideError() {
 
     if (errorBox) {
-        errorBox.style.display = "none";
+
         errorBox.textContent = "";
+
+        errorBox.style.display = "none";
+
     }
 }
 
 
-// ---------------------------------------------------------
-// Hide result
-// ---------------------------------------------------------
+// =========================================================
+// HIDE RESULT
+// =========================================================
 
 function hideResult() {
 
     if (result) {
+
         result.style.display = "none";
+
     }
 }
 
 
-// ---------------------------------------------------------
-// Show result
-// ---------------------------------------------------------
+// =========================================================
+// SHOW RESULT
+// =========================================================
 
 function showResult() {
 
     if (result) {
+
         result.style.display = "block";
+
     }
 }
 
 
-// ---------------------------------------------------------
-// Main form
-// ---------------------------------------------------------
+// =========================================================
+// FORM SUBMISSION
+// =========================================================
 
 form.addEventListener("submit", async function (event) {
 
     event.preventDefault();
 
+    console.log("Starting resume analysis...");
+
     hideError();
+
     hideResult();
 
 
-    // -----------------------------------------------------
-    // Validate resume
-    // -----------------------------------------------------
+    // =====================================================
+    // VALIDATE RESUME
+    // =====================================================
 
     if (!resumeInput.files.length) {
 
@@ -120,9 +134,9 @@ form.addEventListener("submit", async function (event) {
     }
 
 
-    // -----------------------------------------------------
-    // Validate job description
-    // -----------------------------------------------------
+    // =====================================================
+    // VALIDATE JOB DESCRIPTION
+    // =====================================================
 
     const jobDescription =
         jobInput.value.trim();
@@ -138,20 +152,22 @@ form.addEventListener("submit", async function (event) {
     }
 
 
-    // -----------------------------------------------------
-    // UI loading state
-    // -----------------------------------------------------
+    // =====================================================
+    // LOADING STATE
+    // =====================================================
 
     button.disabled = true;
 
     if (loading) {
+
         loading.style.display = "block";
+
     }
 
 
-    // -----------------------------------------------------
-    // Create form data
-    // -----------------------------------------------------
+    // =====================================================
+    // CREATE FORM DATA
+    // =====================================================
 
     const formData = new FormData();
 
@@ -169,16 +185,13 @@ form.addEventListener("submit", async function (event) {
     try {
 
         console.log(
-            "Sending resume to API..."
+            "Sending request to /analyze..."
         );
 
 
-        // -------------------------------------------------
-        // IMPORTANT
-        //
-        // We use a relative URL because the frontend
-        // and FastAPI backend are hosted together on Render.
-        // -------------------------------------------------
+        // =================================================
+        // CALL FASTAPI
+        // =================================================
 
         const response = await fetch(
             "/analyze",
@@ -190,14 +203,14 @@ form.addEventListener("submit", async function (event) {
 
 
         console.log(
-            "API status:",
+            "Server response:",
             response.status
         );
 
 
-        // -------------------------------------------------
-        // Read response
-        // -------------------------------------------------
+        // =================================================
+        // READ RESPONSE
+        // =================================================
 
         const contentType =
             response.headers.get(
@@ -224,79 +237,98 @@ form.addEventListener("submit", async function (event) {
             data = {
                 detail: text
             };
+
         }
 
 
         console.log(
-            "API response:",
+            "API data:",
             data
         );
 
 
-        // -------------------------------------------------
-        // Handle API error
-        // -------------------------------------------------
+        // =================================================
+        // HANDLE ERROR
+        // =================================================
 
         if (!response.ok) {
 
             throw new Error(
                 getErrorMessage(data)
             );
+
         }
 
 
-        // -------------------------------------------------
-        // Display score
-        // -------------------------------------------------
+        // =================================================
+        // SCORE
+        // =================================================
 
         const scoreElement =
-            document.getElementById("score");
+            document.getElementById(
+                "score"
+            );
+
 
         if (scoreElement) {
 
             scoreElement.textContent =
                 `${data.match_score}%`;
+
         }
 
 
-        // -------------------------------------------------
-        // Headline
-        // -------------------------------------------------
+        // =================================================
+        // HEADLINE
+        // =================================================
 
         const headlineElement =
-            document.getElementById("headline");
+            document.getElementById(
+                "headline"
+            );
+
 
         if (headlineElement) {
 
             headlineElement.textContent =
-                data.headline || "Analysis Complete";
+                data.headline ||
+                "Analysis Complete";
+
         }
 
 
-        // -------------------------------------------------
-        // Summary
-        // -------------------------------------------------
+        // =================================================
+        // SUMMARY
+        // =================================================
 
         const summaryElement =
-            document.getElementById("summary");
+            document.getElementById(
+                "summary"
+            );
+
 
         if (summaryElement) {
 
             summaryElement.textContent =
                 data.summary || "";
+
         }
 
 
-        // -------------------------------------------------
-        // Matched skills
-        // -------------------------------------------------
+        // =================================================
+        // MATCHED SKILLS
+        // =================================================
 
         const matchedElement =
-            document.getElementById("matched");
+            document.getElementById(
+                "matched"
+            );
+
 
         if (matchedElement) {
 
             matchedElement.innerHTML = "";
+
 
             const matched =
                 data.matched_skills || [];
@@ -317,31 +349,41 @@ form.addEventListener("submit", async function (event) {
                                 "span"
                             );
 
+
                         span.className =
                             "skill-tag matched-skill";
+
 
                         span.textContent =
                             skill;
 
+
                         matchedElement.appendChild(
                             span
                         );
+
                     }
                 );
+
             }
+
         }
 
 
-        // -------------------------------------------------
-        // Missing skills
-        // -------------------------------------------------
+        // =================================================
+        // MISSING SKILLS
+        // =================================================
 
         const missingElement =
-            document.getElementById("missing");
+            document.getElementById(
+                "missing"
+            );
+
 
         if (missingElement) {
 
             missingElement.innerHTML = "";
+
 
             const missing =
                 data.missing_skills || [];
@@ -362,74 +404,97 @@ form.addEventListener("submit", async function (event) {
                                 "span"
                             );
 
+
                         span.className =
                             "skill-tag missing-skill";
+
 
                         span.textContent =
                             skill;
 
+
                         missingElement.appendChild(
                             span
                         );
+
                     }
                 );
+
             }
+
         }
 
 
-        // -------------------------------------------------
-        // ML probability
-        // -------------------------------------------------
+        // =================================================
+        // ML PROBABILITY
+        // =================================================
 
         const probabilityElement =
-            document.getElementById("prob");
+            document.getElementById(
+                "prob"
+            );
+
 
         if (probabilityElement) {
 
             probabilityElement.textContent =
                 `${data.ml_probability ?? 0}%`;
+
         }
 
 
-        // -------------------------------------------------
-        // Similarity
-        // -------------------------------------------------
+        // =================================================
+        // TF-IDF SIMILARITY
+        // =================================================
 
         const similarityElement =
-            document.getElementById("similarity");
+            document.getElementById(
+                "similarity"
+            );
+
 
         if (similarityElement) {
 
             similarityElement.textContent =
                 `${data.similarity ?? 0}%`;
+
         }
 
 
-        // -------------------------------------------------
-        // Skill match
-        // -------------------------------------------------
+        // =================================================
+        // SKILL MATCH
+        // =================================================
 
         const skillMatchElement =
-            document.getElementById("skillmatch");
+            document.getElementById(
+                "skillmatch"
+            );
+
 
         if (skillMatchElement) {
 
             skillMatchElement.textContent =
                 `${data.skill_match ?? 0}%`;
+
         }
 
 
-        // -------------------------------------------------
-        // Show result
-        // -------------------------------------------------
+        // =================================================
+        // SHOW RESULT
+        // =================================================
 
         showResult();
+
+
+        console.log(
+            "Analysis completed successfully."
+        );
 
 
     } catch (error) {
 
         console.error(
-            "Analysis error:",
+            "Analysis failed:",
             error
         );
 
@@ -444,9 +509,13 @@ form.addEventListener("submit", async function (event) {
 
         button.disabled = false;
 
+
         if (loading) {
+
             loading.style.display = "none";
+
         }
+
     }
 
 });
