@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ResumeAI — AI Resume Analyzer</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- =========================================
+     TOP NAVIGATION
+========================================= -->
+
+<nav class="navbar">
+
+    <div class="nav-inner">
+
+        <div class="brand">
+            <div class="brand-icon">
+                ✦
+            </div>
+
+            <div>
+                <div class="brand-name">Resume<span>AI</span></div>
+                <div class="brand-subtitle">AI Career Intelligence</div>
+            </div>
+        </div>
+
+        <div class="nav-status">
+            <span class="status-dot"></span>
+            AI Engine Online
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+<main class="container">
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div class="eyebrow">
+            <span>✦</span>
+            AI-POWERED RESUME ANALYSIS
+        </div>
+
+        <h1>
+            Understand how well your
+            <span>resume fits the job.</span>
+        </h1>
+
+        <p class="subtitle">
+            Upload your resume and compare it against a job description using
+            machine learning, semantic AI and intelligent skill matching.
+        </p>
+
+    </section>
+
+
+    <!-- =====================================
+         ANALYZER CARD
+    ====================================== -->
+
+    <section class="analyzer-card">
+
+        <div class="card-header">
+
+            <div>
+                <h2>Analyze your resume</h2>
+
+                <p>
+                    Provide your resume and the job you're targeting.
+                </p>
+            </div>
+
+            <div class="step-indicator">
+                <span class="active">01</span>
+                <span></span>
+                <span>02</span>
+            </div>
+
+        </div>
+
+
+        <form id="form">
+
+            <!-- RESUME UPLOAD -->
+
+            <div class="form-section">
+
+                <label>
+                    Resume
+                    <span class="required">*</span>
+                </label>
+
+                <div class="upload-box">
+
+                    <div class="upload-icon">
+                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 16V4M12 4L7 9M12 4L17 9"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"/>
+                            <path d="M5 15V18C5 19.1 5.9 20 7 20H17C18.1 20 19 19.1 19 18V15"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="upload-content">
+
+                        <strong>Upload your resume</strong>
+
+                        <p>
+                            PDF or DOCX • Maximum recommended size 10MB
+                        </p>
+
+                        <label class="upload-button" for="resume">
+                            Choose file
+                        </label>
+
+                        <input
+                            id="resume"
+                            type="file"
+                            accept=".pdf,.docx"
+                            required
+                        >
+
+                        <div id="file-name" class="file-name">
+                            No file selected
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- JOB DESCRIPTION -->
+
+            <div class="form-section">
+
+                <div class="label-row">
+
+                    <label>
+                        Job Description
+                        <span class="required">*</span>
+                    </label>
+
+                    <span class="character-count">
+                        Paste the complete description
+                    </span>
+
+                </div>
+
+                <div class="textarea-wrapper">
+
+                    <textarea
+                        id="job"
+                        rows="12"
+                        placeholder="Paste the job description here...
+
+Example:
+We are looking for an AI/ML Engineer with experience in Python, machine learning, NLP, FastAPI, SQL and cloud technologies..."
+                        required
+                    ></textarea>
+
+                    <div class="textarea-footer">
+
+                        <span>
+                            <span class="green-dot"></span>
+                            Job requirements will be analyzed automatically
+                        </span>
+
+                        <span id="char-count">
+                            0 characters
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTION -->
+
+            <div class="action-area">
+
+                <button id="button" type="submit">
+
+                    <span class="button-icon">✦</span>
+
+                    <span>Analyze Resume</span>
+
+                    <span class="button-arrow">→</span>
+
+                </button>
+
+                <p class="privacy-note">
+                    Your resume is processed for analysis and is not used to make
+                    automated hiring decisions.
+                </p>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================
+         LOADING
+    ====================================== -->
+
+    <section id="loading" class="loading-card hidden">
+
+        <div class="loader"></div>
+
+        <div>
+            <strong>Analyzing your resume</strong>
+
+            <p>
+                Comparing skills, experience and semantic relevance...
+            </p>
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         RESULTS
+    ====================================== -->
+
+    <section id="result" class="results hidden">
+
+        <div class="results-header">
+
+            <div>
+
+                <div class="result-label">
+                    ANALYSIS COMPLETE
+                </div>
+
+                <h2>Your Resume Analysis</h2>
+
+                <p>
+                    Here's how your resume compares with the target position.
+                </p>
+
+            </div>
+
+            <div class="success-badge">
+                <span>✓</span>
+                Analysis complete
+            </div>
+
+        </div>
+
+
+        <!-- SCORE -->
+
+        <div class="score-card">
+
+            <div class="score-visual">
+
+                <div class="score-ring">
+
+                    <div class="score-ring-inner">
+
+                        <div id="score">
+                            0%
+                        </div>
+
+                        <span>Match</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="score-content">
+
+                <div class="score-tag">
+                    OVERALL MATCH
+                </div>
+
+                <h2 id="headline">
+                    Resume Match
+                </h2>
+
+                <p id="summary">
+                    Your resume analysis will appear here.
+                </p>
+
+                <div class="score-explanation">
+
+                    <span class="info-icon">i</span>
+
+                    Your score combines semantic similarity,
+                    skill alignment and machine-learning signals.
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SKILLS -->
+
+        <div class="section-title">
+
+            <div>
+                <span class="mini-label">SKILL ANALYSIS</span>
+                <h3>Skills & Requirements</h3>
+            </div>
+
+        </div>
+
+
+        <div class="skills-grid">
+
+            <!-- MATCHED -->
+
+            <div class="skill-card matched-card">
+
+                <div class="skill-card-header">
+
+                    <div class="skill-heading">
+
+                        <div class="skill-icon matched-icon">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <h3>Matched Skills</h3>
+
+                            <p>
+                                Skills found in your resume
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div id="matched" class="tags"></div>
+
+            </div>
+
+
+            <!-- MISSING -->
+
+            <div class="skill-card missing-card">
+
+                <div class="skill-card-header">
+
+                    <div class="skill-heading">
+
+                        <div class="skill-icon missing-icon">
+                            !
+                        </div>
+
+                        <div>
+
+                            <h3>Missing Skills</h3>
+
+                            <p>
+                                Skills mentioned in the job
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div id="missing" class="tags"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- METRICS -->
+
+        <div class="section-title metrics-title">
+
+            <div>
+                <span class="mini-label">MODEL INSIGHTS</span>
+                <h3>AI / ML Metrics</h3>
+            </div>
+
+        </div>
+
+
+        <div class="metrics">
+
+            <div class="metric-card">
+
+                <div class="metric-icon">
+                    ◈
+                </div>
+
+                <div class="metric-label">
+                    ML PROBABILITY
+                </div>
+
+                <div class="metric-value">
+                    <span id="prob">—</span>
+                </div>
+
+                <div class="metric-description">
+                    Classification confidence
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-icon">
+                    ◎
+                </div>
+
+                <div class="metric-label">
+                    SEMANTIC SIMILARITY
+                </div>
+
+                <div class="metric-value">
+                    <span id="similarity">—</span>
+                </div>
+
+                <div class="metric-description">
+                    Resume ↔ job meaning similarity
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-icon">
+                    ◌
+                </div>
+
+                <div class="metric-label">
+                    SKILL MATCH
+                </div>
+
+                <div class="metric-value">
+                    <span id="skillmatch">—</span>
+                </div>
+
+                <div class="metric-description">
+                    Relevant skills detected
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTICE -->
+
+        <div class="notice">
+
+            <div class="notice-icon">
+                i
+            </div>
+
+            <div>
+
+                <strong>Important</strong>
+
+                <p>
+                    This is an educational AI/ML prototype designed to analyze
+                    job-related qualifications. The result is not a hiring
+                    decision and should not be used to automatically reject
+                    or select candidates.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ERROR -->
+
+    <section id="error" class="error-card hidden"></section>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <div>
+            Resume<span>AI</span>
+        </div>
+
+        <p>
+            Built with Machine Learning • NLP • Semantic AI
+        </p>
+
+    </footer>
+
+</main>
+
+
+<script src="/static/app.js"></script>
+
+<script>
+
+    /* File name display */
+
+    const resumeInput = document.getElementById("resume");
+    const fileName = document.getElementById("file-name");
+
+    resumeInput.addEventListener("change", function () {
+
+        if (this.files.length > 0) {
+
+            fileName.textContent = "✓ " + this.files[0].name;
+            fileName.classList.add("selected");
+
+        } else {
+
+            fileName.textContent = "No file selected";
+            fileName.classList.remove("selected");
+
+        }
+
+    });
+
+
+    /* Character counter */
+
+    const jobInput = document.getElementById("job");
+    const charCount = document.getElementById("char-count");
+
+    jobInput.addEventListener("input", function () {
+
+        charCount.textContent =
+            this.value.length.toLocaleString() + " characters";
+
+    });
+
+</script>
+
+</body>
+</html>
