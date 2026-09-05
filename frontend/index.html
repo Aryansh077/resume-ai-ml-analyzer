@@ -539,10 +539,10 @@ We are looking for an AI/ML Engineer with experience in Python, machine learning
 
     /* File name display */
 
-    const resumeInput = document.getElementById("resume");
+    const fileInput = document.getElementById("resume");
     const fileName = document.getElementById("file-name");
 
-    resumeInput.addEventListener("change", function () {
+    fileInput.addEventListener("change", function () {
 
         if (this.files.length > 0) {
 
@@ -561,10 +561,10 @@ We are looking for an AI/ML Engineer with experience in Python, machine learning
 
     /* Character counter */
 
-    const jobInput = document.getElementById("job");
+    const descriptionInput = document.getElementById("job");
     const charCount = document.getElementById("char-count");
 
-    jobInput.addEventListener("input", function () {
+    descriptionInput.addEventListener("input", function () {
 
         charCount.textContent =
             this.value.length.toLocaleString() + " characters";

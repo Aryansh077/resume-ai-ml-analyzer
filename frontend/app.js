@@ -94,7 +94,7 @@ function showError(message) {
 
         errorBox.textContent = message;
 
-        errorBox.style.display = "block";
+        errorBox.classList.remove("hidden");
 
     } else {
 
@@ -114,7 +114,7 @@ function hideError() {
 
         errorBox.textContent = "";
 
-        errorBox.style.display = "none";
+        errorBox.classList.add("hidden");
 
     }
 }
@@ -128,7 +128,7 @@ function hideResult() {
 
     if (result) {
 
-        result.style.display = "none";
+        result.classList.add("hidden");
 
     }
 }
@@ -142,7 +142,7 @@ function showResult() {
 
     if (result) {
 
-        result.style.display = "block";
+        result.classList.remove("hidden");
 
     }
 }
@@ -203,7 +203,7 @@ form.addEventListener("submit", async function (event) {
 
     if (loading) {
 
-        loading.style.display = "block";
+        loading.classList.remove("hidden");
 
     }
 
@@ -555,7 +555,7 @@ form.addEventListener("submit", async function (event) {
 
         if (loading) {
 
-            loading.style.display = "none";
+            loading.classList.add("hidden");
 
         }
 
